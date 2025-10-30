@@ -2,17 +2,10 @@
 # Copyright © 2025 Frequenz Energy-as-a-Service GmbH
 
 """Tests for the frequenz.microgrid_component_graph package."""
-import pytest
 
-from frequenz.microgrid_component_graph import delete_me
-
-
-def test_microgrid_component_graph_succeeds() -> None:  # TODO(cookiecutter): Remove
-    """Test that the delete_me function succeeds."""
-    assert delete_me() is True
+from frequenz import microgrid_component_graph
 
 
-def test_microgrid_component_graph_fails() -> None:  # TODO(cookiecutter): Remove
-    """Test that the delete_me function fails."""
-    with pytest.raises(RuntimeError, match="This function should be removed!"):
-        delete_me(blow_up=True)
+def test_loading() -> None:
+    """Test that the microgrid_component_graph module loads correctly."""
+    assert microgrid_component_graph is not None
