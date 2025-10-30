@@ -100,7 +100,7 @@ include = '\.pyi?$'
 [tool.isort]
 profile = "black"
 line_length = 88
-src_paths = ["benchmarks", "examples", "src", "tests"]
+src_paths = ["benchmarks", "examples", "python", "tests"]
 
 [tool.flake8]
 # We give some flexibility to go over 88, there are cases like long URLs or
@@ -150,7 +150,7 @@ disable = [
 
 [tool.pytest.ini_options]
 addopts = "-W=all -Werror -Wdefault::DeprecationWarning -Wdefault::PendingDeprecationWarning -vv"
-testpaths = ["tests", "src"]
+testpaths = ["tests", "python"]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 required_plugins = ["pytest-asyncio", "pytest-mock"]
@@ -166,6 +166,7 @@ namespace_packages = true
 #no_incremental = true
 packages = ["frequenz.microgrid_component_graph"]
 strict = true
+mypy_path = "python"
 
 [[tool.mypy.overrides]]
 module = ["mkdocs_macros.*", "sybil", "sybil.*"]
