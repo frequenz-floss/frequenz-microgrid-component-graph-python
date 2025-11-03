@@ -4,7 +4,7 @@
 [build-system]
 requires = [
   "setuptools == 75.8.0",
-  "setuptools_scm[toml] == 8.1.0",
+  "setuptools_scm[toml] == 9.2.2",
   "frequenz-repo-config[lib] == 0.13.6",
 ]
 build-backend = "setuptools.build_meta"
