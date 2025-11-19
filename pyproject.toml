@@ -2,12 +2,8 @@
 # Copyright © 2025 Frequenz Energy-as-a-Service GmbH
 
 [build-system]
-requires = [
-  "setuptools == 75.8.0",
-  "setuptools_scm[toml] == 9.2.2",
-  "frequenz-repo-config[lib] == 0.13.6",
-]
-build-backend = "setuptools.build_meta"
+requires = ["maturin>=1.9.6,<2.0"]
+build-backend = "maturin"
 
 [project]
 name = "frequenz-microgrid-component-graph"
@@ -15,7 +11,6 @@ description = "Python bindings for the Frequenz microgrid component graph rust l
 readme = "README.md"
 license = { text = "MIT" }
 keywords = ["frequenz", "python", "lib", "library", "microgrid-component-graph"]
-# TODO(cookiecutter): Remove and add more classifiers if appropriate
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
@@ -26,7 +21,6 @@ classifiers = [
   "Typing :: Typed",
 ]
 requires-python = ">= 3.11, < 4"
-# TODO(cookiecutter): Remove and add more dependencies if appropriate
 dependencies = [
   "typing-extensions >= 4.14.1, < 5",
 ]
@@ -36,8 +30,13 @@ dynamic = ["version"]
 name = "Frequenz Energy-as-a-Service GmbH"
 email = "floss@frequenz.com"
 
-# TODO(cookiecutter): Remove and add more optional dependencies if appropriate
 [project.optional-dependencies]
+microgrid = [
+  "frequenz-client-microgrid >= 0.18.0, < 0.19",
+]
+assets = [
+  "frequenz-client-assets >= 0.1.0, < 0.2",
+]
 dev-flake8 = [
   "flake8 == 7.3.0",
   "flake8-docstrings == 1.7.0",
@@ -74,6 +73,7 @@ dev-pylint = [
   "frequenz-microgrid-component-graph[dev-mkdocs,dev-noxfile,dev-pytest]",
 ]
 dev-pytest = [
+  "frequenz-microgrid-component-graph[microgrid]",
   "pytest == 8.4.2",
   "pylint == 4.0.2",       # We need this to check for the examples
   "frequenz-repo-config[extra-lint-examples] == 0.13.6",
@@ -92,6 +92,11 @@ Issues = "https://github.com/frequenz-floss/frequenz-microgrid-component-graph-p
 Repository = "https://github.com/frequenz-floss/frequenz-microgrid-component-graph-python"
 Support = "https://github.com/frequenz-floss/frequenz-microgrid-component-graph-python/discussions/categories/support"
 
+[tool.maturin]
+features = ["pyo3/extension-module"]
+module-name = "frequenz.microgrid_component_graph._component_graph"
+python-source = "python"
+
 [tool.black]
 line-length = 88
 target-version = ['py311']
@@ -101,6 +106,7 @@ include = '\.pyi?$'
 profile = "black"
 line_length = 88
 src_paths = ["benchmarks", "examples", "python", "tests"]
+skip_glob = ["*.pyi"]
 
 [tool.flake8]
 # We give some flexibility to go over 88, there are cases like long URLs or
