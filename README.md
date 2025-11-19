@@ -6,16 +6,14 @@
 
 ## Introduction
 
-Python bindings for the Frequenz microgrid component graph rust library.
-
-TODO(cookiecutter): Improve the README file
+Python bindings for the [Frequenz microgrid component graph](https://github.com/frequenz-floss/frequenz-microgrid-component-graph-rs) rust library.
 
 ## Supported Platforms
 
 The following platforms are officially supported (tested):
 
-- **Python:** 3.11
-- **Operating System:** Ubuntu Linux 20.04
+- **Python:** 3.11, 3.12, 3.13, 3.14
+- **Operating System:** Ubuntu Linux 24.04, Microsoft Windows, Apple MacOS 15
 - **Architectures:** amd64, arm64
 
 ## Contributing
