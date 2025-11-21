@@ -28,30 +28,30 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch:
-          - amd64
-          - arm
-        os:
+        target:
           - ubuntu-24.04
+          - ubuntu-24.04-arm
+          - windows-latest
+          - macos-15-intel
+          - macos-15
         python:
           - "3.11"
           - "3.12"
+          - "3.13"
+          - "3.14"
         nox-session:
           # To speed things up a bit we use the special ci_checks_max session
           # that uses the same venv to run multiple linting sessions
           - "ci_checks_max"
           - "pytest_min"
-    runs-on: ${{ matrix.os }}${{ matrix.arch != 'amd64' && format('-{0}', matrix.arch) || '' }}
+    runs-on: ${{ matrix.target }}
 
     steps:
       - name: Run nox
-        uses: frequenz-floss/gh-action-nox@v1.0.1
+        uses: frequenz-floss/gh-action-nox@e1351cf45e05e85afc1c79ab883e06322892d34c  # v1.1.0
         with:
           python-version: ${{ matrix.python }}
           nox-session: ${{ matrix.nox-session }}
-          # TODO(cookiecutter): Uncomment this for projects with private dependencies
-          # git-username: ${{ secrets.GIT_USER }}
-          # git-password: ${{ secrets.GIT_PASS }}
 
   # This job runs if all the `nox` matrix jobs ran and succeeded.
   # It is only used to have a single job that we can require in branch
@@ -72,18 +72,24 @@ jobs:
 
   build:
     name: Build distribution packages
-    # Since this is a pure Python package, we only need to build it once. If it
-    # had any architecture specific code, we would need to build it for each
-    # architecture.
-    runs-on: ubuntu-24.04
-
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - ubuntu-24.04
+          - ubuntu-24.04-arm
+          - windows-latest
+          - macos-15-intel
+          - macos-15
+        python:
+          - "3.11"
+          - "3.12"
+          - "3.13"
+          - "3.14"
+    runs-on: ${{ matrix.target }}
     steps:
       - name: Setup Git
         uses: frequenz-floss/gh-action-setup-git@v1.0.0
-        # TODO(cookiecutter): Uncomment this for projects with private dependencies
-        # with:
-        #   username: ${{ secrets.GIT_USER }}
-        #   password: ${{ secrets.GIT_PASS }}
 
       - name: Fetch sources
         uses: actions/checkout@v5
@@ -93,7 +99,7 @@ jobs:
       - name: Setup Python
         uses: frequenz-floss/gh-action-setup-python-with-deps@v1.0.1
         with:
-          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+          python-version: ${{ matrix.python }}
           dependencies: build
 
       - name: Build the source and binary distribution
@@ -102,7 +108,7 @@ jobs:
       - name: Upload distribution files
         uses: actions/upload-artifact@v5
         with:
-          name: dist-packages
+          name: dist-packages-${{ matrix.target }}-${{ matrix.python }}
           path: dist/
           if-no-files-found: error
 
@@ -112,23 +118,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch:
-          - amd64
-          - arm
-        os:
+        target:
           - ubuntu-24.04
+          - ubuntu-24.04-arm
+          - windows-latest
+          - macos-15-intel
+          - macos-15
         python:
           - "3.11"
           - "3.12"
-    runs-on: ${{ matrix.os }}${{ matrix.arch != 'amd64' && format('-{0}', matrix.arch) || '' }}
+          - "3.13"
+          - "3.14"
+    runs-on: ${{ matrix.target }}
 
     steps:
       - name: Setup Git
         uses: frequenz-floss/gh-action-setup-git@v1.0.0
-        # TODO(cookiecutter): Uncomment this for projects with private dependencies
-        # with:
-        #   username: ${{ secrets.GIT_USER }}
-        #   password: ${{ secrets.GIT_PASS }}
 
       - name: Print environment (debug)
         run: env
@@ -136,11 +141,12 @@ jobs:
       - name: Download package
         uses: actions/download-artifact@v6
         with:
-          name: dist-packages
+          name: dist-packages-${{ matrix.target }}-${{ matrix.python }}
           path: dist
 
       # This is necessary for the `pip` caching in the setup-python action to work
       - name: Fetch the pyproject.toml file for this action hash
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -186,10 +192,6 @@ jobs:
     steps:
       - name: Setup Git
         uses: frequenz-floss/gh-action-setup-git@v1.0.0
-        # TODO(cookiecutter): Uncomment this for projects with private dependencies
-        # with:
-        #   username: ${{ secrets.GIT_USER }}
-        #   password: ${{ secrets.GIT_PASS }}
 
       - name: Fetch sources
         uses: actions/checkout@v5
@@ -226,10 +228,6 @@ jobs:
     steps:
       - name: Setup Git
         uses: frequenz-floss/gh-action-setup-git@v1.0.0
-        # TODO(cookiecutter): Uncomment this for projects with private dependencies
-        # with:
-        #   username: ${{ secrets.GIT_USER }}
-        #   password: ${{ secrets.GIT_PASS }}
 
       - name: Fetch sources
         uses: actions/checkout@v5
@@ -300,7 +298,6 @@ jobs:
       - name: Download distribution files
         uses: actions/download-artifact@v6
         with:
-          name: dist-packages
           path: dist
 
       - name: Download RELEASE_NOTES.md
@@ -346,7 +343,6 @@ jobs:
       - name: Download distribution files
         uses: actions/download-artifact@v6
         with:
-          name: dist-packages
           path: dist
 
       - name: Publish the Python distribution to PyPI
