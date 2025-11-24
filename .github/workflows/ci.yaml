@@ -359,7 +359,16 @@ jobs:
       - name: Download distribution files
         uses: actions/download-artifact@v6
         with:
+          pattern: dist-packages-*/*.whl
           path: dist
+          merge-multiple: true
+
+      - name: Download distribution files
+        uses: actions/download-artifact@v6
+        with:
+          pattern: dist-packages-*/*.whl
+          path: dist
+          merge-multiple: true
 
       - name: Publish the Python distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
