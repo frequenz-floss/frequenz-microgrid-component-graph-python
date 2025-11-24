@@ -325,7 +325,7 @@ jobs:
             --generate-notes \
             $extra_opts \
             $REF_NAME \
-            dist/dist-packages-*/*
+            dist/dist-packages-*/*.whl
         env:
           REF_NAME: ${{ github.ref_name }}
           REPOSITORY: ${{ github.repository }}
