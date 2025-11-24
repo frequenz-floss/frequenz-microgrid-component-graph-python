@@ -109,7 +109,7 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: dist-packages-${{ matrix.target }}-${{ matrix.python }}
-          path: dist/
+          path: dist/*.whl
           if-no-files-found: error
 
   build-sdist:
@@ -126,7 +126,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist-packages-sdist
-          path: dist
+          path: dist/*.tar.gz
 
   test-installation:
     name: Test package installation
@@ -360,6 +360,7 @@ jobs:
         uses: actions/download-artifact@v6
         with:
           path: dist
+          merge-multiple: true
 
       - name: Publish the Python distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
