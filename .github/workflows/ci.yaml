@@ -70,47 +70,110 @@ jobs:
       - name: Check matrix job result
         run: test "$DEPS_RESULT" = "success"
 
-  build:
-    name: Build distribution packages
+  build-linux:
+    runs-on: ${{ matrix.platform.runner }}
     strategy:
-      fail-fast: false
       matrix:
-        target:
-          - ubuntu-24.04
-          - ubuntu-24.04-arm
-          - windows-latest
-          - macos-15-intel
-          - macos-15
-        python:
-          - "3.11"
-          - "3.12"
-          - "3.13"
-          - "3.14"
-    runs-on: ${{ matrix.target }}
+        platform:
+          - runner: ubuntu-22.04
+            target: x86_64
+          - runner: ubuntu-22.04
+            target: aarch64
     steps:
-      - name: Setup Git
-        uses: frequenz-floss/gh-action-setup-git@v1.0.0
-
-      - name: Fetch sources
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
         with:
-          submodules: true
-
-      - name: Setup Python
-        uses: frequenz-floss/gh-action-setup-python-with-deps@v1.0.1
+          python-version: 3.x
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
         with:
-          python-version: ${{ matrix.python }}
-          dependencies: build
-
-      - name: Build the source and binary distribution
-        run: python -m build
-
-      - name: Upload distribution files
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist --find-interpreter
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+          manylinux: auto
+      - name: Upload wheels
         uses: actions/upload-artifact@v5
         with:
-          name: dist-packages-${{ matrix.target }}-${{ matrix.python }}
-          path: dist/*.whl
-          if-no-files-found: error
+          name: wheels-linux-${{ matrix.platform.target }}
+          path: dist
+
+  build-musllinux:
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      matrix:
+        platform:
+          - runner: ubuntu-22.04
+            target: x86_64
+          - runner: ubuntu-22.04
+            target: aarch64
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist --find-interpreter
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+          manylinux: musllinux_1_2
+      - name: Upload wheels
+        uses: actions/upload-artifact@v5
+        with:
+          name: wheels-musllinux-${{ matrix.platform.target }}
+          path: dist
+
+  build-windows:
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      matrix:
+        platform:
+          - runner: windows-latest
+            target: x64
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+          architecture: ${{ matrix.platform.target }}
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist --find-interpreter
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      - name: Upload wheels
+        uses: actions/upload-artifact@v5
+        with:
+          name: wheels-windows-${{ matrix.platform.target }}
+          path: dist
+
+  build-macos:
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      matrix:
+        platform:
+          - runner: macos-15-intel
+            target: x86_64
+          - runner: macos-15
+            target: aarch64
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist --find-interpreter
+          sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
+      - name: Upload wheels
+        uses: actions/upload-artifact@v5
+        with:
+          name: wheels-macos-${{ matrix.platform.target }}
+          path: dist
 
   build-sdist:
     name: Build source distribution packages
@@ -123,29 +186,44 @@ jobs:
           command: sdist
           args: --out dist
       - name: Upload sdist
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
-          name: dist-packages-sdist
+          name: wheels-sdist
           path: dist/*.tar.gz
 
   test-installation:
     name: Test package installation
-    needs: ["build", "build-sdist"]
+    needs:
+      - "build-linux"
+      - "build-musllinux"
+      - "build-windows"
+      - "build-macos"
+      - "build-sdist"
     strategy:
       fail-fast: false
       matrix:
-        target:
-          - ubuntu-24.04
-          - ubuntu-24.04-arm
-          - windows-latest
-          - macos-15-intel
-          - macos-15
+        platform:
+          - runner: ubuntu-24.04
+            image: linux
+            target: x86_64
+          - runner: ubuntu-24.04-arm
+            image: linux
+            target: aarch64
+          - runner: windows-latest
+            image: windows
+            target: x64
+          - runner: macos-15-intel
+            image: macos
+            target: x86_64
+          - runner: macos-15
+            image: macos
+            target: aarch64
         python:
           - "3.11"
           - "3.12"
           - "3.13"
           - "3.14"
-    runs-on: ${{ matrix.target }}
+    runs-on: ${{ matrix.platform.runner }}
 
     steps:
       - name: Setup Git
@@ -157,7 +235,7 @@ jobs:
       - name: Download package
         uses: actions/download-artifact@v6
         with:
-          name: dist-packages-${{ matrix.target }}-${{ matrix.python }}
+          name: wheels-${{ matrix.platform.image }}-${{ matrix.platform.target }}
           path: dist
 
       # This is necessary for the `pip` caching in the setup-python action to work
@@ -341,7 +419,7 @@ jobs:
             --generate-notes \
             $extra_opts \
             $REF_NAME \
-            dist/dist-packages-*/*.whl dist/dist-packages-sdist/*.tar.gz
+            dist/wheels-*/*.whl dist/wheels-sdist/*.tar.gz
         env:
           REF_NAME: ${{ github.ref_name }}
           REPOSITORY: ${{ github.repository }}
