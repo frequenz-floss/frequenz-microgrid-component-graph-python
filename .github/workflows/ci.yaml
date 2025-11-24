@@ -205,18 +205,23 @@ jobs:
         platform:
           - runner: ubuntu-24.04
             image: linux
+            tag: manylinux
             target: x86_64
           - runner: ubuntu-24.04-arm
             image: linux
+            tag: manylinux
             target: aarch64
           - runner: windows-latest
             image: windows
+            tag: win
             target: x64
           - runner: macos-15-intel
             image: macos
+            tag: macosx
             target: x86_64
           - runner: macos-15
             image: macos
+            tag: macosx
             target: aarch64
         python:
           - semver: "3.11"
@@ -261,7 +266,7 @@ jobs:
         uses: frequenz-floss/gh-action-setup-python-with-deps@v1.0.1
         with:
           python-version: ${{ matrix.python.semver }}
-          dependencies: dist/*${{ matrix.python.wheelver }}*.whl
+          dependencies: dist/*${{ matrix.python.wheelver }}-${{ matrix.platform.tag }}*.whl
 
       - name: Print installed packages (debug)
         run: python -m pip freeze
