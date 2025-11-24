@@ -219,10 +219,14 @@ jobs:
             image: macos
             target: aarch64
         python:
-          - "3.11"
-          - "3.12"
-          - "3.13"
-          - "3.14"
+          - semver: "3.11"
+            wheelver: cp311
+          - semver: "3.12"
+            wheelver: cp312
+          - semver: "3.13"
+            wheelver: cp313
+          - semver: "3.14"
+            wheelver: cp314
     runs-on: ${{ matrix.platform.runner }}
 
     steps:
@@ -256,8 +260,8 @@ jobs:
       - name: Setup Python
         uses: frequenz-floss/gh-action-setup-python-with-deps@v1.0.1
         with:
-          python-version: ${{ matrix.python }}
-          dependencies: dist/*.whl
+          python-version: ${{ matrix.python.semver }}
+          dependencies: dist/*${{ matrix.python.wheelver }}*.whl
 
       - name: Print installed packages (debug)
         run: python -m pip freeze
