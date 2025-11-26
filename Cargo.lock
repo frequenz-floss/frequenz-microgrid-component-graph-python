@@ -22,9 +22,9 @@ checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
 
 [[package]]
 name = "frequenz-microgrid-component-graph"
-version = "0.1.2"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e45a0a99c4c324e7845e4128fc4078168ad14810c0bd0e4a629fa027895bf911"
+checksum = "1995604d1b936b8d3c626e26f883b926ee4ade301703cabd2254a513dc6e42a5"
 dependencies = [
  "petgraph",
  "tracing",
