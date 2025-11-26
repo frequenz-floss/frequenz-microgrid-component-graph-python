@@ -1,5 +1,5 @@
 # Frequenz Microgrid Component Graph Library Release Notes
 
-## Summary
+## New Features
 
-This is the initial release of the python bindings for the component graph.
+- Grid formulas now use single successor meters as fallback components for meters attached to the grid.
