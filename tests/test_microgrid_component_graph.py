@@ -11,6 +11,7 @@ from frequenz.client.microgrid.component import (
     GridConnectionPoint,
     Meter,
     SolarInverter,
+    WindTurbine,
 )
 
 from frequenz import microgrid_component_graph
@@ -76,4 +77,50 @@ def test_graph_creation() -> None:
     ) == {
         Meter(id=ComponentId(3), microgrid_id=MicrogridId(1)),
         SolarInverter(id=ComponentId(4), microgrid_id=MicrogridId(1)),
+    }
+
+
+def test_wind_turbine_graph() -> None:
+    """Test graph creation and formula generation for Wind Turbines."""
+    graph: microgrid_component_graph.ComponentGraph[
+        Component, ComponentConnection, ComponentId
+    ] = microgrid_component_graph.ComponentGraph(
+        components={
+            GridConnectionPoint(
+                id=ComponentId(1),
+                microgrid_id=MicrogridId(1),
+                rated_fuse_current=100,
+            ),
+            Meter(id=ComponentId(2), microgrid_id=MicrogridId(1)),
+            WindTurbine(id=ComponentId(3), microgrid_id=MicrogridId(1)),
+        },
+        connections={
+            # Grid -> Meter -> Wind Turbine
+            ComponentConnection(source=ComponentId(1), destination=ComponentId(2)),
+            ComponentConnection(source=ComponentId(2), destination=ComponentId(3)),
+        },
+    )
+
+    # 1. Test Component Retrieval
+    assert graph.components(matching_types=WindTurbine) == {
+        WindTurbine(id=ComponentId(3), microgrid_id=MicrogridId(1))
+    }
+
+    # 2. Test Combined Retrieval (Meter + Wind)
+    assert graph.components(matching_types=[Meter, WindTurbine]) == {
+        Meter(id=ComponentId(2), microgrid_id=MicrogridId(1)),
+        WindTurbine(id=ComponentId(3), microgrid_id=MicrogridId(1)),
+    }
+
+    # 3. Test Formula Generation
+    # References the Meter (ID 2) measuring the Turbine (ID 3).
+    assert (
+        graph.wind_turbine_formula(wind_turbine_ids={ComponentId(3)})
+        == "COALESCE(#3, #2, 0.0)"
+    )
+
+    # 4. Test Topology (Successors/Predecessors)
+    # The predecessor of the Wind Turbine (3) should be the Meter (2)
+    assert graph.predecessors(ComponentId(3)) == {
+        Meter(id=ComponentId(2), microgrid_id=MicrogridId(1))
     }

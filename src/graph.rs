@@ -278,6 +278,18 @@ impl ComponentGraph {
             .map_err(|e| PyErr::new::<FormulaGenerationError, _>(e.to_string()))
     }
 
+    #[pyo3(signature = (wind_turbine_ids=None))]
+    fn wind_turbine_formula(
+        &self,
+        py: Python<'_>,
+        wind_turbine_ids: Option<Bound<'_, PyAny>>,
+    ) -> PyResult<String> {
+        self.graph
+            .wind_turbine_formula(extract_ids(py, wind_turbine_ids)?)
+            .map(|f| f.to_string())
+            .map_err(|e| PyErr::new::<FormulaGenerationError, _>(e.to_string()))
+    }
+
     fn grid_coalesce_formula(&self) -> PyResult<String> {
         self.graph
             .grid_coalesce_formula()
