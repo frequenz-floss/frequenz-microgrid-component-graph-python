@@ -84,14 +84,14 @@ pub(crate) fn category_from_python_component(
         || object.is(&comp_classes.hybrid_inverter)
     {
         Ok(cg::ComponentCategory::Inverter(cg::InverterType::Hybrid))
-    } else if object.is_instance(&comp_classes.unspecified_component)?
-        || object.is(&comp_classes.unspecified_component)
-    {
-        Ok(cg::ComponentCategory::Unspecified)
     } else if object.is_instance(&comp_classes.wind_turbine)?
         || object.is(&comp_classes.wind_turbine)
     {
         Ok(cg::ComponentCategory::WindTurbine)
+    } else if object.is_instance(&comp_classes.unspecified_component)?
+        || object.is(&comp_classes.unspecified_component)
+    {
+        Ok(cg::ComponentCategory::Unspecified)
     } else {
         Err(exceptions::PyValueError::new_err(format!(
             "Unsupported component category: {:?}",
