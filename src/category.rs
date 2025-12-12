@@ -10,6 +10,7 @@ struct ComponentClasses<'py> {
     battery: Bound<'py, PyAny>,
     ev_charger: Bound<'py, PyAny>,
     chp: Bound<'py, PyAny>,
+    wind_turbine: Bound<'py, PyAny>,
     battery_inverter: Bound<'py, PyAny>,
     solar_inverter: Bound<'py, PyAny>,
     hybrid_inverter: Bound<'py, PyAny>,
@@ -33,6 +34,7 @@ impl<'py> ComponentClasses<'py> {
                         battery: module.getattr("Battery")?,
                         ev_charger: module.getattr("EvCharger")?,
                         chp: module.getattr("Chp")?,
+                        wind_turbine: module.getattr("WindTurbine")?,
                         battery_inverter: module.getattr("BatteryInverter")?,
                         solar_inverter: module.getattr("SolarInverter")?,
                         hybrid_inverter: module.getattr("HybridInverter")?,
@@ -82,6 +84,10 @@ pub(crate) fn category_from_python_component(
         || object.is(&comp_classes.hybrid_inverter)
     {
         Ok(cg::ComponentCategory::Inverter(cg::InverterType::Hybrid))
+    } else if object.is_instance(&comp_classes.wind_turbine)?
+        || object.is(&comp_classes.wind_turbine)
+    {
+        Ok(cg::ComponentCategory::WindTurbine)
     } else if object.is_instance(&comp_classes.unspecified_component)?
         || object.is(&comp_classes.unspecified_component)
     {

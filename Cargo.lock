@@ -22,9 +22,9 @@ checksum = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80"
 
 [[package]]
 name = "frequenz-microgrid-component-graph"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1995604d1b936b8d3c626e26f883b926ee4ade301703cabd2254a513dc6e42a5"
+checksum = "96b3e6a856da39ea69dcfa516398e87c1e1b655f33df0530fefd35dcb7ab724f"
 dependencies = [
  "petgraph",
  "tracing",
@@ -32,7 +32,7 @@ dependencies = [
 
 [[package]]
 name = "frequenz-microgrid-component-graph-python-bindings"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "frequenz-microgrid-component-graph",
  "pyo3",

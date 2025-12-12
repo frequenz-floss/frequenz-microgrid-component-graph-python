@@ -292,6 +292,22 @@ class ComponentGraph(Generic[ComponentT, ConnectionT, ComponentIdT]):
                 are not EV chargers.
         """
 
+    def wind_turbine_formula(self, wind_turbine_ids: Set[ComponentIdT] | None) -> str:
+        """Generate the wind turbine formula for this component graph.
+
+        Args:
+            wind_turbine_ids: The set of wind turbine component IDs to include in
+                the formula.  If `None`, all wind turbines in the graph will be
+                included.
+
+        Returns:
+            The wind turbine formula as a string.
+
+        Raises:
+            FormulaGenerationError: if the given component IDs don't exist or
+                are not wind turbines.
+        """
+
     def grid_coalesce_formula(self) -> str:
         """Generate the grid coalesce formula for this component graph.
 
