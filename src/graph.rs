@@ -16,7 +16,7 @@ use pyo3::{
     types::{PyAny, PySet, PyType},
 };
 
-#[pyclass]
+#[pyclass(subclass)]
 #[derive(Clone, Default, Debug)]
 pub struct ComponentGraphConfig {
     config: cg::ComponentGraphConfig,
@@ -49,7 +49,7 @@ impl ComponentGraphConfig {
     }
 }
 
-#[pyclass]
+#[pyclass(subclass)]
 pub struct ComponentGraph {
     graph: cg::ComponentGraph<Component, Connection>,
 }
