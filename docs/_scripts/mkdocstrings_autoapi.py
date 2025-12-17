@@ -5,4 +5,4 @@
 
 from frequenz.repo.config.mkdocs import api_pages
 
-api_pages.generate_python_api_pages("src", "reference")
+api_pages.generate_python_api_pages("python", "reference")
