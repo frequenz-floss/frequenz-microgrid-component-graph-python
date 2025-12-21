@@ -116,7 +116,7 @@ def test_wind_turbine_graph() -> None:
     # References the Meter (ID 2) measuring the Turbine (ID 3).
     assert (
         graph.wind_turbine_formula(wind_turbine_ids={ComponentId(3)})
-        == "COALESCE(#3, #2, 0.0)"
+        == "COALESCE(#2, #3, 0.0)"
     )
 
     # 4. Test Topology (Successors/Predecessors)

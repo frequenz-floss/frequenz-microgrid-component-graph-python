@@ -30,13 +30,25 @@ impl ComponentGraphConfig {
         allow_component_validation_failures = false,
         allow_unconnected_components = false,
         allow_unspecified_inverters = false,
-        disable_fallback_components = false
+        disable_fallback_components = false,
+        include_phantom_loads_in_consumer_formula = false,
+        prefer_inverters_in_battery_formula = false,
+        prefer_inverters_in_pv_formula = false,
+        prefer_chp_in_chp_formula = false,
+        prefer_ev_chargers_in_ev_formula = false,
+        prefer_wind_turbines_in_wind_formula = false,
     ))]
     fn new(
         allow_component_validation_failures: bool,
         allow_unconnected_components: bool,
         allow_unspecified_inverters: bool,
         disable_fallback_components: bool,
+        include_phantom_loads_in_consumer_formula: bool,
+        prefer_inverters_in_battery_formula: bool,
+        prefer_inverters_in_pv_formula: bool,
+        prefer_chp_in_chp_formula: bool,
+        prefer_ev_chargers_in_ev_formula: bool,
+        prefer_wind_turbines_in_wind_formula: bool,
     ) -> Self {
         ComponentGraphConfig {
             config: cg::ComponentGraphConfig {
@@ -44,6 +56,12 @@ impl ComponentGraphConfig {
                 allow_unconnected_components,
                 allow_unspecified_inverters,
                 disable_fallback_components,
+                include_phantom_loads_in_consumer_formula,
+                prefer_inverters_in_battery_formula,
+                prefer_inverters_in_pv_formula,
+                prefer_chp_in_chp_formula,
+                prefer_ev_chargers_in_ev_formula,
+                prefer_wind_turbines_in_wind_formula,
             },
         }
     }
