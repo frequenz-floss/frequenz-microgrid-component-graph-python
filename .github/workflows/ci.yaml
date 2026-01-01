@@ -48,7 +48,7 @@ jobs:
 
     steps:
       - name: Run nox
-        uses: frequenz-floss/gh-action-nox@e1351cf45e05e85afc1c79ab883e06322892d34c  # v1.1.0
+        uses: frequenz-floss/gh-action-nox@f7f9a0160c8c724426e6f700c876c18df65b3f26  # v1.1.0
         with:
           python-version: ${{ matrix.python }}
           nox-session: ${{ matrix.nox-session }}
