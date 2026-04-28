@@ -21,6 +21,7 @@ struct ComponentClasses<'py> {
     voltage_transformer: Bound<'py, PyAny>,
     hvac: Bound<'py, PyAny>,
     crypto_miner: Bound<'py, PyAny>,
+    relay: Bound<'py, PyAny>,
 }
 
 impl<'py> ComponentClasses<'py> {
@@ -51,6 +52,7 @@ impl<'py> ComponentClasses<'py> {
                         voltage_transformer: module.getattr("VoltageTransformer")?,
                         hvac: module.getattr("Hvac")?,
                         crypto_miner: module.getattr("CryptoMiner")?,
+                        relay: module.getattr("Relay")?,
                     });
                 }
                 Err(e) => last_err = Some(e),
@@ -125,6 +127,14 @@ pub(crate) fn category_from_python_component(
         || object.is(&comp_classes.crypto_miner)
     {
         Ok(cg::ComponentCategory::CryptoMiner)
+    } else if object.is_instance(&comp_classes.relay)? || object.is(&comp_classes.relay) {
+        // The upstream client's `Relay` is internally the protobuf
+        // `BREAKER` enum value (see `_category.py`'s
+        // `RELAY = ELECTRICAL_COMPONENT_CATEGORY_BREAKER`), so map
+        // it onto the Rust crate's `Breaker` variant. The Python side
+        // here will likely move to using the breaker name directly in
+        // a follow-up cleanup.
+        Ok(cg::ComponentCategory::Breaker)
     } else {
         Err(exceptions::PyValueError::new_err(format!(
             "Unsupported component category: {:?}",

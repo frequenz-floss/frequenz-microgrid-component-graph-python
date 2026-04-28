@@ -18,6 +18,7 @@ from frequenz.client.microgrid.component import (
     Hvac,
     Meter,
     Precharger,
+    Relay,
     SolarInverter,
     VoltageTransformer,
     WindTurbine,
@@ -193,6 +194,7 @@ def test_passthrough_voltage_transformer() -> None:
         (Electrolyzer, {}),
         (Hvac, {}),
         (CryptoMiner, {}),
+        (Relay, {}),
     ],
 )
 def test_passthrough_category_recognized(
