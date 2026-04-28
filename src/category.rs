@@ -15,6 +15,12 @@ struct ComponentClasses<'py> {
     solar_inverter: Bound<'py, PyAny>,
     hybrid_inverter: Bound<'py, PyAny>,
     unspecified_component: Bound<'py, PyAny>,
+    converter: Bound<'py, PyAny>,
+    precharger: Bound<'py, PyAny>,
+    electrolyzer: Bound<'py, PyAny>,
+    voltage_transformer: Bound<'py, PyAny>,
+    hvac: Bound<'py, PyAny>,
+    crypto_miner: Bound<'py, PyAny>,
 }
 
 impl<'py> ComponentClasses<'py> {
@@ -39,6 +45,12 @@ impl<'py> ComponentClasses<'py> {
                         solar_inverter: module.getattr("SolarInverter")?,
                         hybrid_inverter: module.getattr("HybridInverter")?,
                         unspecified_component: module.getattr("UnspecifiedComponent")?,
+                        converter: module.getattr("Converter")?,
+                        precharger: module.getattr("Precharger")?,
+                        electrolyzer: module.getattr("Electrolyzer")?,
+                        voltage_transformer: module.getattr("VoltageTransformer")?,
+                        hvac: module.getattr("Hvac")?,
+                        crypto_miner: module.getattr("CryptoMiner")?,
                     });
                 }
                 Err(e) => last_err = Some(e),
@@ -92,6 +104,27 @@ pub(crate) fn category_from_python_component(
         || object.is(&comp_classes.unspecified_component)
     {
         Ok(cg::ComponentCategory::Unspecified)
+    } else if object.is_instance(&comp_classes.converter)? || object.is(&comp_classes.converter) {
+        Ok(cg::ComponentCategory::Converter)
+    } else if object.is_instance(&comp_classes.precharger)? || object.is(&comp_classes.precharger) {
+        Ok(cg::ComponentCategory::Precharger)
+    } else if object.is_instance(&comp_classes.electrolyzer)?
+        || object.is(&comp_classes.electrolyzer)
+    {
+        Ok(cg::ComponentCategory::Electrolyzer)
+    } else if object.is_instance(&comp_classes.voltage_transformer)?
+        || object.is(&comp_classes.voltage_transformer)
+    {
+        // The upstream client publishes this as `VoltageTransformer`,
+        // while the Rust crate's enum names the same concept
+        // `PowerTransformer`. Map across the naming difference here.
+        Ok(cg::ComponentCategory::PowerTransformer)
+    } else if object.is_instance(&comp_classes.hvac)? || object.is(&comp_classes.hvac) {
+        Ok(cg::ComponentCategory::Hvac)
+    } else if object.is_instance(&comp_classes.crypto_miner)?
+        || object.is(&comp_classes.crypto_miner)
+    {
+        Ok(cg::ComponentCategory::CryptoMiner)
     } else {
         Err(exceptions::PyValueError::new_err(format!(
             "Unsupported component category: {:?}",
