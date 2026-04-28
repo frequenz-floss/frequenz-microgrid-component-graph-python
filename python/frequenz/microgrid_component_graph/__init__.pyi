@@ -148,26 +148,78 @@ class ComponentGraph(Generic[ComponentT, ConnectionT, ComponentIdT]):
         """
 
     def predecessors(self, component_id: ComponentIdT) -> Set[ComponentT]:
-        """Fetch all predecessors of the specified component ID.
+        """Fetch the *effective* (pass-through-aware) predecessors of the
+        specified component ID.
+
+        Pass-through component categories are walked transparently:
+        their non-pass-through ancestors take their place in the result.
+        For the raw graph view that includes pass-throughs, use
+        `raw_predecessors`.
 
         Args:
             component_id: ID of the component whose predecessors should be fetched.
 
         Returns:
-            A set of components that are predecessors of the given component ID.
+            A set of components that are effective predecessors of the
+            given component ID.
 
         Raises:
             ValueError: if no component exists with the given ID.
         """
 
     def successors(self, component_id: ComponentIdT) -> Set[ComponentT]:
-        """Fetch all successors of the specified component ID.
+        """Fetch the *effective* (pass-through-aware) successors of the
+        specified component ID.
+
+        Pass-through component categories are walked transparently:
+        their non-pass-through descendants take their place in the
+        result. For the raw graph view that includes pass-throughs, use
+        `raw_successors`.
 
         Args:
             component_id: ID of the component whose successors should be fetched.
 
         Returns:
-            A set of components that are successors of the given component ID.
+            A set of components that are effective successors of the
+            given component ID.
+
+        Raises:
+            ValueError: if no component exists with the given ID.
+        """
+
+    def raw_predecessors(self, component_id: ComponentIdT) -> Set[ComponentT]:
+        """Fetch the *raw* (graph-direct) predecessors of the specified
+        component ID, including pass-through nodes.
+
+        Most callers want `predecessors` instead, which walks past
+        pass-throughs transparently.
+
+        Args:
+            component_id: ID of the component whose raw predecessors
+                should be fetched.
+
+        Returns:
+            A set of every component connected to the given ID by an
+            incoming edge.
+
+        Raises:
+            ValueError: if no component exists with the given ID.
+        """
+
+    def raw_successors(self, component_id: ComponentIdT) -> Set[ComponentT]:
+        """Fetch the *raw* (graph-direct) successors of the specified
+        component ID, including pass-through nodes.
+
+        Most callers want `successors` instead, which walks past
+        pass-throughs transparently.
+
+        Args:
+            component_id: ID of the component whose raw successors
+                should be fetched.
+
+        Returns:
+            A set of every component connected to the given ID by an
+            outgoing edge.
 
         Raises:
             ValueError: if no component exists with the given ID.

@@ -180,6 +180,10 @@ def test_passthrough_voltage_transformer() -> None:
     # transformer).
     assert graph.successors(ComponentId(1)) == {meter}
 
+    # raw_predecessors / raw_successors expose the transformer.
+    assert graph.raw_predecessors(ComponentId(3)) == {transformer}
+    assert graph.raw_successors(ComponentId(1)) == {transformer}
+
 
 @pytest.mark.parametrize(
     "passthrough_class, passthrough_kwargs",

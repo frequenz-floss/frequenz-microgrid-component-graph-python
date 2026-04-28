@@ -202,6 +202,32 @@ impl ComponentGraph {
         })
     }
 
+    fn raw_predecessors(&self, component_id: Bound<'_, PyAny>) -> PyResult<Py<PySet>> {
+        Python::attach(|py| {
+            PySet::new(
+                py,
+                self.graph
+                    .raw_predecessors(extract_int::<u64>(py, component_id)?)
+                    .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?
+                    .map(|c| c.object.bind(py)),
+            )
+            .map(|s| s.into())
+        })
+    }
+
+    fn raw_successors(&self, component_id: Bound<'_, PyAny>) -> PyResult<Py<PySet>> {
+        Python::attach(|py| {
+            PySet::new(
+                py,
+                self.graph
+                    .raw_successors(extract_int::<u64>(py, component_id)?)
+                    .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?
+                    .map(|c| c.object.bind(py)),
+            )
+            .map(|s| s.into())
+        })
+    }
+
     fn is_pv_meter(&self, py: Python<'_>, component_id: Bound<'_, PyAny>) -> PyResult<bool> {
         self.graph
             .is_pv_meter(extract_int::<u64>(py, component_id)?)
