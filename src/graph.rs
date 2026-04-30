@@ -16,6 +16,21 @@ use pyo3::{
     types::{PyAny, PySet, PyType},
 };
 
+/// Builds a Python `set` from the result of a graph-neighbor lookup.
+///
+/// Maps a `cg::Error` onto a `ValueError` and converts each yielded
+/// `&Component` into the underlying Python object before building the
+/// set.
+fn neighbors_set<'a, I, E>(py: Python<'_>, result: Result<I, E>) -> PyResult<Py<PySet>>
+where
+    I: Iterator<Item = &'a Component>,
+    E: std::fmt::Display,
+{
+    let iter =
+        result.map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?;
+    PySet::new(py, iter.map(|c| c.object.bind(py))).map(|s| s.into())
+}
+
 #[pyclass(subclass)]
 #[derive(Clone, Default, Debug)]
 pub struct ComponentGraphConfig {
@@ -178,53 +193,40 @@ impl ComponentGraph {
 
     fn predecessors(&self, component_id: Bound<'_, PyAny>) -> PyResult<Py<PySet>> {
         Python::attach(|py| {
-            PySet::new(
+            neighbors_set(
                 py,
                 self.graph
-                    .predecessors(extract_int::<u64>(py, component_id)?)
-                    .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?
-                    .map(|c| c.object.bind(py)),
+                    .predecessors(extract_int::<u64>(py, component_id)?),
             )
-            .map(|s| s.into())
         })
     }
 
     fn successors(&self, component_id: Bound<'_, PyAny>) -> PyResult<Py<PySet>> {
         Python::attach(|py| {
-            PySet::new(
+            neighbors_set(
                 py,
-                self.graph
-                    .successors(extract_int::<u64>(py, component_id)?)
-                    .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?
-                    .map(|c| c.object.bind(py)),
+                self.graph.successors(extract_int::<u64>(py, component_id)?),
             )
-            .map(|s| s.into())
         })
     }
 
     fn raw_predecessors(&self, component_id: Bound<'_, PyAny>) -> PyResult<Py<PySet>> {
         Python::attach(|py| {
-            PySet::new(
+            neighbors_set(
                 py,
                 self.graph
-                    .raw_predecessors(extract_int::<u64>(py, component_id)?)
-                    .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?
-                    .map(|c| c.object.bind(py)),
+                    .raw_predecessors(extract_int::<u64>(py, component_id)?),
             )
-            .map(|s| s.into())
         })
     }
 
     fn raw_successors(&self, component_id: Bound<'_, PyAny>) -> PyResult<Py<PySet>> {
         Python::attach(|py| {
-            PySet::new(
+            neighbors_set(
                 py,
                 self.graph
-                    .raw_successors(extract_int::<u64>(py, component_id)?)
-                    .map_err(|e| PyErr::new::<pyo3::exceptions::PyValueError, _>(e.to_string()))?
-                    .map(|c| c.object.bind(py)),
+                    .raw_successors(extract_int::<u64>(py, component_id)?),
             )
-            .map(|s| s.into())
         })
     }
 
