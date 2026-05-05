@@ -80,7 +80,7 @@ jobs:
           - runner: ubuntu-22.04
             target: aarch64
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: 3.x
@@ -107,7 +107,7 @@ jobs:
           - runner: ubuntu-22.04
             target: aarch64
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: 3.x
@@ -132,7 +132,7 @@ jobs:
           - runner: windows-latest
             target: x64
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: 3.x
@@ -159,7 +159,7 @@ jobs:
           - runner: macos-15
             target: aarch64
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: 3.x
@@ -179,7 +179,7 @@ jobs:
     name: Build source distribution packages
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Build sdist
         uses: PyO3/maturin-action@v1
         with:
@@ -297,7 +297,7 @@ jobs:
         uses: frequenz-floss/gh-action-setup-git@v1.0.0
 
       - name: Fetch sources
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -333,7 +333,7 @@ jobs:
         uses: frequenz-floss/gh-action-setup-git@v1.0.0
 
       - name: Fetch sources
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           submodules: true
 
