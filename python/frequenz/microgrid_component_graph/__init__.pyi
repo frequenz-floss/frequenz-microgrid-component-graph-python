@@ -367,7 +367,7 @@ class ComponentGraph(Generic[ComponentT, ConnectionT, ComponentIdT]):
             The grid coalesced formula as a string.
         """
 
-    def battery_coalesce_formula(self, battery_ids: Set[ComponentIdT] | None) -> str:
+    def battery_ac_coalesce_formula(self, battery_ids: Set[ComponentIdT] | None) -> str:
         """Generate the battery coalesce formula for this component graph.
 
         Args:
@@ -383,7 +383,7 @@ class ComponentGraph(Generic[ComponentT, ConnectionT, ComponentIdT]):
                 are not batteries.
         """
 
-    def pv_coalesce_formula(self, pv_inverter_ids: Set[ComponentIdT] | None) -> str:
+    def pv_ac_coalesce_formula(self, pv_inverter_ids: Set[ComponentIdT] | None) -> str:
         """Generate the PV coalesce formula for this component graph.
 
         Args:
