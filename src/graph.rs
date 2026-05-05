@@ -352,6 +352,18 @@ impl ComponentGraph {
             .map_err(|e| PyErr::new::<FormulaGenerationError, _>(e.to_string()))
     }
 
+    #[pyo3(signature = (steam_boiler_ids=None))]
+    fn steam_boiler_formula(
+        &self,
+        py: Python<'_>,
+        steam_boiler_ids: Option<Bound<'_, PyAny>>,
+    ) -> PyResult<String> {
+        self.graph
+            .steam_boiler_formula(extract_ids(py, steam_boiler_ids)?)
+            .map(|f| f.to_string())
+            .map_err(|e| PyErr::new::<FormulaGenerationError, _>(e.to_string()))
+    }
+
     fn grid_coalesce_formula(&self) -> PyResult<String> {
         self.graph
             .grid_coalesce_formula()

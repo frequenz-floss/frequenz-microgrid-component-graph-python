@@ -360,6 +360,22 @@ class ComponentGraph(Generic[ComponentT, ConnectionT, ComponentIdT]):
                 are not wind turbines.
         """
 
+    def steam_boiler_formula(self, steam_boiler_ids: Set[ComponentIdT] | None) -> str:
+        """Generate the steam boiler formula for this component graph.
+
+        Args:
+            steam_boiler_ids: The set of steam boiler component IDs to include in
+                the formula.  If `None`, all steam boilers in the graph will be
+                included.
+
+        Returns:
+            The steam boiler formula as a string.
+
+        Raises:
+            FormulaGenerationError: if the given component IDs don't exist or
+                are not steam boilers.
+        """
+
     def grid_coalesce_formula(self) -> str:
         """Generate the grid coalesce formula for this component graph.
 
