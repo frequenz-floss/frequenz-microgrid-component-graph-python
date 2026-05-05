@@ -34,4 +34,6 @@ mod _component_graph {
     use crate::graph::ComponentGraph;
     #[pymodule_export]
     use crate::graph::ComponentGraphConfig;
+    #[pymodule_export]
+    use crate::graph::FormulaOverrides;
 }
