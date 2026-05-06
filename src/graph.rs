@@ -32,11 +32,8 @@ impl ComponentGraphConfig {
         allow_unspecified_inverters = false,
         disable_fallback_components = false,
         include_phantom_loads_in_consumer_formula = false,
-        prefer_inverters_in_battery_formula = false,
-        prefer_inverters_in_pv_formula = false,
-        prefer_chp_in_chp_formula = false,
-        prefer_ev_chargers_in_ev_formula = false,
-        prefer_wind_turbines_in_wind_formula = false,
+        prefer_meters_in_component_formulas = true,
+        formula_overrides = None,
     ))]
     fn new(
         allow_component_validation_failures: bool,
@@ -44,25 +41,72 @@ impl ComponentGraphConfig {
         allow_unspecified_inverters: bool,
         disable_fallback_components: bool,
         include_phantom_loads_in_consumer_formula: bool,
-        prefer_inverters_in_battery_formula: bool,
-        prefer_inverters_in_pv_formula: bool,
-        prefer_chp_in_chp_formula: bool,
-        prefer_ev_chargers_in_ev_formula: bool,
-        prefer_wind_turbines_in_wind_formula: bool,
+        prefer_meters_in_component_formulas: bool,
+        formula_overrides: Option<FormulaOverrides>,
     ) -> Self {
+        let mut builder = cg::ComponentGraphConfig::builder()
+            .allow_component_validation_failures(allow_component_validation_failures)
+            .allow_unconnected_components(allow_unconnected_components)
+            .allow_unspecified_inverters(allow_unspecified_inverters)
+            .disable_fallback_components(disable_fallback_components)
+            .include_phantom_loads_in_consumer_formula(include_phantom_loads_in_consumer_formula)
+            .prefer_meters_in_component_formulas(prefer_meters_in_component_formulas);
+        if let Some(overrides) = formula_overrides {
+            builder = builder.formula_overrides(overrides.overrides);
+        }
         ComponentGraphConfig {
-            config: cg::ComponentGraphConfig {
-                allow_component_validation_failures,
-                allow_unconnected_components,
-                allow_unspecified_inverters,
-                disable_fallback_components,
-                include_phantom_loads_in_consumer_formula,
-                prefer_inverters_in_battery_formula,
-                prefer_inverters_in_pv_formula,
-                prefer_chp_in_chp_formula,
-                prefer_ev_chargers_in_ev_formula,
-                prefer_wind_turbines_in_wind_formula,
-            },
+            config: builder.build(),
+        }
+    }
+}
+
+#[pyclass(subclass)]
+#[derive(Clone, Default, Debug)]
+pub struct FormulaOverrides {
+    overrides: cg::FormulaOverrides,
+}
+
+#[pymethods]
+impl FormulaOverrides {
+    #[new]
+    #[pyo3(signature = (
+        *,
+        prefer_meters_in_pv_formula = None,
+        prefer_meters_in_battery_formula = None,
+        prefer_meters_in_chp_formula = None,
+        prefer_meters_in_ev_charger_formula = None,
+        prefer_meters_in_wind_turbine_formula = None,
+        prefer_meters_in_steam_boiler_formula = None,
+    ))]
+    fn new(
+        prefer_meters_in_pv_formula: Option<bool>,
+        prefer_meters_in_battery_formula: Option<bool>,
+        prefer_meters_in_chp_formula: Option<bool>,
+        prefer_meters_in_ev_charger_formula: Option<bool>,
+        prefer_meters_in_wind_turbine_formula: Option<bool>,
+        prefer_meters_in_steam_boiler_formula: Option<bool>,
+    ) -> Self {
+        let mut builder = cg::FormulaOverrides::builder();
+        if let Some(v) = prefer_meters_in_pv_formula {
+            builder = builder.prefer_meters_in_pv_formula(v);
+        }
+        if let Some(v) = prefer_meters_in_battery_formula {
+            builder = builder.prefer_meters_in_battery_formula(v);
+        }
+        if let Some(v) = prefer_meters_in_chp_formula {
+            builder = builder.prefer_meters_in_chp_formula(v);
+        }
+        if let Some(v) = prefer_meters_in_ev_charger_formula {
+            builder = builder.prefer_meters_in_ev_charger_formula(v);
+        }
+        if let Some(v) = prefer_meters_in_wind_turbine_formula {
+            builder = builder.prefer_meters_in_wind_turbine_formula(v);
+        }
+        if let Some(v) = prefer_meters_in_steam_boiler_formula {
+            builder = builder.prefer_meters_in_steam_boiler_formula(v);
+        }
+        FormulaOverrides {
+            overrides: builder.build(),
         }
     }
 }
@@ -304,6 +348,18 @@ impl ComponentGraph {
     ) -> PyResult<String> {
         self.graph
             .wind_turbine_formula(extract_ids(py, wind_turbine_ids)?)
+            .map(|f| f.to_string())
+            .map_err(|e| PyErr::new::<FormulaGenerationError, _>(e.to_string()))
+    }
+
+    #[pyo3(signature = (steam_boiler_ids=None))]
+    fn steam_boiler_formula(
+        &self,
+        py: Python<'_>,
+        steam_boiler_ids: Option<Bound<'_, PyAny>>,
+    ) -> PyResult<String> {
+        self.graph
+            .steam_boiler_formula(extract_ids(py, steam_boiler_ids)?)
             .map(|f| f.to_string())
             .map_err(|e| PyErr::new::<FormulaGenerationError, _>(e.to_string()))
     }

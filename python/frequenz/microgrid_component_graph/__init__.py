@@ -7,6 +7,7 @@ from ._component_graph import (
     ComponentGraph,
     ComponentGraphConfig,
     FormulaGenerationError,
+    FormulaOverrides,
     InvalidGraphError,
 )
 
@@ -14,5 +15,6 @@ __all__ = [
     "ComponentGraph",
     "ComponentGraphConfig",
     "FormulaGenerationError",
+    "FormulaOverrides",
     "InvalidGraphError",
 ]
