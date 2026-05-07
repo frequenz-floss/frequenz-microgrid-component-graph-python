@@ -32,6 +32,7 @@ from frequenz.client.microgrid.component import (
     LiIonBattery,
     Meter,
     SolarInverter,
+    SteamBoiler,
     WindTurbine,
 )
 
@@ -144,6 +145,20 @@ def _ev_graph(
     )
 
 
+def _steam_boiler_graph(
+    config: ComponentGraphConfig | None = None,
+) -> ComponentGraph[Any, Any, Any]:
+    return ComponentGraph(
+        components={
+            _grid(),
+            _meter(),
+            SteamBoiler(id=ComponentId(3), microgrid_id=_MGRID),
+        },
+        connections={_conn(1, 2), _conn(2, 3)},
+        config=config or ComponentGraphConfig(),
+    )
+
+
 _CATEGORIES = [
     pytest.param(_pv_graph, "pv_formula", "prefer_meters_in_pv_formula", id="pv"),
     pytest.param(
@@ -164,6 +179,12 @@ _CATEGORIES = [
         "ev_charger_formula",
         "prefer_meters_in_ev_charger_formula",
         id="ev_charger",
+    ),
+    pytest.param(
+        _steam_boiler_graph,
+        "steam_boiler_formula",
+        "prefer_meters_in_steam_boiler_formula",
+        id="steam_boiler",
     ),
 ]
 
@@ -215,13 +236,6 @@ def test_override_false_wins_over_global_true(
     )
     formula = getattr(build_graph(config), method)(None)
     assert formula == _DEVICE_PRIMARY
-
-
-# `steam_boiler_formula` cannot be exercised end-to-end because the
-# upstream `frequenz.client.microgrid` Python package does not currently
-# expose a `SteamBoiler` component class, so a graph that contains a
-# steam boiler cannot be constructed from Python yet. The argument-handling
-# edge cases are still meaningful and worth pinning down.
 
 
 def _empty_graph() -> ComponentGraph[Any, Any, Any]:
