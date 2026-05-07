@@ -1,9 +1,17 @@
 # Frequenz Microgrid Component Graph Library Release Notes
 
+## Summary
+
+<!-- Here goes a general summary of what this release is about -->
+
 ## Upgrading
 
-- This release updates the `frequenz-microgrid-component-graph` rust crate version to 0.5.  `ComponentGraphConfig` is restructured to match: the six per-category `prefer_X_in_Y_formula` flags are replaced by a global `prefer_meters_in_component_formulas` plus per-formula overrides via the new `FormulaOverrides` class.  Also exposes the new `steam_boiler_formula` method, and renames `battery_coalesce_formula` / `pv_coalesce_formula` to `battery_ac_coalesce_formula` / `pv_ac_coalesce_formula`.
+<!-- Here goes notes on how to upgrade from previous versions, including deprecations and what they should be replaced with -->
 
-- `ComponentGraphConfig.__init__` is now declared as keyword-only in the type stubs (the runtime was already keyword-only, so positional calls were already failing at runtime).
+## New Features
 
-- The per-category preference flags inverted polarity: where the old flags selected the *device*, the new override entries select the *meter*.  E.g. `ComponentGraphConfig(prefer_inverters_in_pv_formula=True)` becomes `ComponentGraphConfig(formula_overrides=FormulaOverrides(prefer_meters_in_pv_formula=False))`.
+<!-- Here goes the main new features and examples or instructions on how to use them -->
+
+## Bug Fixes
+
+<!-- Here goes notable bug fixes that are worth a special mention or explanation -->
