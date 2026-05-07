@@ -9,7 +9,9 @@ from frequenz.client.microgrid.component import (
     Component,
     ComponentConnection,
     GridConnectionPoint,
+    Hvac,
     Meter,
+    Relay,
     SolarInverter,
     WindTurbine,
 )
@@ -124,3 +126,94 @@ def test_wind_turbine_graph() -> None:
     assert graph.predecessors(ComponentId(3)) == {
         Meter(id=ComponentId(2), microgrid_id=MicrogridId(1))
     }
+
+
+def test_relay_is_passthrough() -> None:
+    """`Relay` maps to cg's `Breaker`, a pass-through category.
+
+    A Relay placed between a Meter and a SolarInverter should be
+    transparent: cg walks past it when answering `predecessors`/
+    `successors`, and the PV formula references only the Meter and
+    the inverter.
+    """
+    graph: microgrid_component_graph.ComponentGraph[
+        Component, ComponentConnection, ComponentId
+    ] = microgrid_component_graph.ComponentGraph(
+        components={
+            GridConnectionPoint(
+                id=ComponentId(1),
+                microgrid_id=MicrogridId(1),
+                rated_fuse_current=100,
+            ),
+            Meter(id=ComponentId(2), microgrid_id=MicrogridId(1)),
+            Relay(id=ComponentId(3), microgrid_id=MicrogridId(1)),
+            SolarInverter(id=ComponentId(4), microgrid_id=MicrogridId(1)),
+        },
+        connections={
+            # Grid -> Meter -> Relay -> SolarInverter
+            ComponentConnection(source=ComponentId(1), destination=ComponentId(2)),
+            ComponentConnection(source=ComponentId(2), destination=ComponentId(3)),
+            ComponentConnection(source=ComponentId(3), destination=ComponentId(4)),
+        },
+    )
+
+    # Neighbor queries walk past the Relay.
+    assert graph.predecessors(ComponentId(4)) == {
+        Meter(id=ComponentId(2), microgrid_id=MicrogridId(1)),
+    }
+    assert graph.successors(ComponentId(2)) == {
+        SolarInverter(id=ComponentId(4), microgrid_id=MicrogridId(1)),
+    }
+    # And the formula references the Meter and the inverter only --
+    # the Relay (#3) does not appear.
+    assert (
+        graph.pv_ac_coalesce_formula(pv_inverter_ids={ComponentId(4)})
+        == "COALESCE(#2, #4)"
+    )
+
+
+def test_hvac_is_passthrough() -> None:
+    """`Hvac` maps to cg's `Hvac`, a pass-through category.
+
+    An Hvac placed between the Grid and a Meter should be
+    transparent: `successors(Grid)` walks past it to the Meter,
+    and the PV formula references only the Meter and the inverter.
+    """
+    graph: microgrid_component_graph.ComponentGraph[
+        Component, ComponentConnection, ComponentId
+    ] = microgrid_component_graph.ComponentGraph(
+        components={
+            GridConnectionPoint(
+                id=ComponentId(1),
+                microgrid_id=MicrogridId(1),
+                rated_fuse_current=100,
+            ),
+            Hvac(id=ComponentId(2), microgrid_id=MicrogridId(1)),
+            Meter(id=ComponentId(3), microgrid_id=MicrogridId(1)),
+            SolarInverter(id=ComponentId(4), microgrid_id=MicrogridId(1)),
+        },
+        connections={
+            # Grid -> Hvac -> Meter -> SolarInverter
+            ComponentConnection(source=ComponentId(1), destination=ComponentId(2)),
+            ComponentConnection(source=ComponentId(2), destination=ComponentId(3)),
+            ComponentConnection(source=ComponentId(3), destination=ComponentId(4)),
+        },
+    )
+
+    # Neighbor queries walk past the Hvac.
+    assert graph.successors(ComponentId(1)) == {
+        Meter(id=ComponentId(3), microgrid_id=MicrogridId(1)),
+    }
+    assert graph.predecessors(ComponentId(3)) == {
+        GridConnectionPoint(
+            id=ComponentId(1),
+            microgrid_id=MicrogridId(1),
+            rated_fuse_current=100,
+        ),
+    }
+    # And the formula references the Meter and the inverter only --
+    # the Hvac (#2) does not appear.
+    assert (
+        graph.pv_ac_coalesce_formula(pv_inverter_ids={ComponentId(4)})
+        == "COALESCE(#3, #4)"
+    )
