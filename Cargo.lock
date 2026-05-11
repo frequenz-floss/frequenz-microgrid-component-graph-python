@@ -32,7 +32,7 @@ dependencies = [
 
 [[package]]
 name = "frequenz-microgrid-component-graph-python-bindings"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "frequenz-microgrid-component-graph",
  "pyo3",
