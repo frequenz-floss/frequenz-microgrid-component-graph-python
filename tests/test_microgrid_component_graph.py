@@ -154,6 +154,35 @@ def test_wind_turbine_graph() -> None:
     }
 
 
+def test_steam_boiler_graph() -> None:
+    """Test graph creation and formula generation for Steam Boilers."""
+    graph: microgrid_component_graph.ComponentGraph[
+        Component, ComponentConnection, ComponentId
+    ] = microgrid_component_graph.ComponentGraph(
+        components={
+            GridConnectionPoint(
+                id=ComponentId(1),
+                microgrid_id=MicrogridId(1),
+                rated_fuse_current=100,
+            ),
+            Meter(id=ComponentId(2), microgrid_id=MicrogridId(1)),
+            SteamBoiler(id=ComponentId(3), microgrid_id=MicrogridId(1)),
+        },
+        connections={
+            ComponentConnection(source=ComponentId(1), destination=ComponentId(2)),
+            ComponentConnection(source=ComponentId(2), destination=ComponentId(3)),
+        },
+    )
+
+    assert graph.components(matching_types=SteamBoiler) == {
+        SteamBoiler(id=ComponentId(3), microgrid_id=MicrogridId(1))
+    }
+    assert (
+        graph.steam_boiler_formula(steam_boiler_ids={ComponentId(3)})
+        == "COALESCE(#2, #3, 0.0)"
+    )
+
+
 def test_relay_is_passthrough() -> None:
     """`Relay` maps to cg's `Breaker`, a pass-through category.
 
