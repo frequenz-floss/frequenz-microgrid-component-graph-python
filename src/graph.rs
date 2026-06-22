@@ -16,7 +16,7 @@ use pyo3::{
     types::{PyAny, PySet, PyType},
 };
 
-#[pyclass(subclass)]
+#[pyclass(subclass, from_py_object)]
 #[derive(Clone, Default, Debug)]
 pub struct ComponentGraphConfig {
     config: cg::ComponentGraphConfig,
@@ -60,7 +60,7 @@ impl ComponentGraphConfig {
     }
 }
 
-#[pyclass(subclass)]
+#[pyclass(subclass, from_py_object)]
 #[derive(Clone, Default, Debug)]
 pub struct FormulaOverrides {
     overrides: cg::FormulaOverrides,

@@ -6,7 +6,7 @@
 
 ## Upgrading
 
-<!-- Here goes notes on how to upgrade from previous versions, including deprecations and what they should be replaced with -->
+- Bumped PyO3 to 0.29 to pull in the fix for RUSTSEC out-of-bounds read advisory GHSA-36hh-v3qg-5jq4 (`nth`/`nth_back` on list/tuple iterators).
 
 ## New Features
 
