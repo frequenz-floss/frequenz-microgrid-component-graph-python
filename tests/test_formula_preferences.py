@@ -7,8 +7,8 @@ These tests build a small, controllable graph (Grid -> Meter -> Device)
 for each per-category formula method and assert the actual formula
 output for the four meter/device-preference combinations:
 
-    * default config                -> meter primary
-    * global False                  -> device primary
+    * default config                -> device primary
+    * global True                   -> meter primary
     * per-formula override = True   -> meter primary (override wins)
     * per-formula override = False  -> device primary (override wins)
 
@@ -190,26 +190,26 @@ _CATEGORIES = [
 
 
 @pytest.mark.parametrize("build_graph,method,override_field", _CATEGORIES)
-def test_default_config_prefers_meter(
+def test_default_config_prefers_device(
     build_graph: GraphBuilder,
     method: str,
     override_field: str,  # pylint: disable=unused-argument
 ) -> None:
-    """Default config selects the meter as the primary source."""
+    """Default config selects the device as the primary source."""
     formula = getattr(build_graph(None), method)(None)
-    assert formula == _METER_PRIMARY
+    assert formula == _DEVICE_PRIMARY
 
 
 @pytest.mark.parametrize("build_graph,method,override_field", _CATEGORIES)
-def test_global_false_prefers_device(
+def test_global_true_prefers_meter(
     build_graph: GraphBuilder,
     method: str,
     override_field: str,  # pylint: disable=unused-argument
 ) -> None:
-    """Setting `prefer_meters_in_component_formulas=False` selects the device."""
-    config = ComponentGraphConfig(prefer_meters_in_component_formulas=False)
+    """Setting `prefer_meters_in_component_formulas=True` selects the meter."""
+    config = ComponentGraphConfig(prefer_meters_in_component_formulas=True)
     formula = getattr(build_graph(config), method)(None)
-    assert formula == _DEVICE_PRIMARY
+    assert formula == _METER_PRIMARY
 
 
 @pytest.mark.parametrize("build_graph,method,override_field", _CATEGORIES)

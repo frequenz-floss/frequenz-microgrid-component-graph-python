@@ -32,7 +32,7 @@ impl ComponentGraphConfig {
         allow_unspecified_inverters = false,
         disable_fallback_components = false,
         include_phantom_loads_in_consumer_formula = false,
-        prefer_meters_in_component_formulas = true,
+        prefer_meters_in_component_formulas = false,
         formula_overrides = None,
     ))]
     fn new(

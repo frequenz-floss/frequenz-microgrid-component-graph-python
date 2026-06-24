@@ -25,7 +25,7 @@ class ComponentGraphConfig:
         allow_unspecified_inverters: bool = False,
         disable_fallback_components: bool = False,
         include_phantom_loads_in_consumer_formula: bool = False,
-        prefer_meters_in_component_formulas: bool = True,
+        prefer_meters_in_component_formulas: bool = False,
         formula_overrides: FormulaOverrides | None = None,
     ) -> None:
         """Initialize this instance.
@@ -55,11 +55,11 @@ class ComponentGraphConfig:
                 that meter that is not in the component graph is then also
                 excluded together with the group.
             prefer_meters_in_component_formulas: Default policy for the per-category
-                formulas.  When `True` (the default), the meter measurement is the
-                primary source and the device measurement is the fallback for
+                formulas.  When `False` (the default), the device measurement is the
+                primary source and the meter measurement is the fallback for
                 `battery_formula`, `chp_formula`, `pv_formula`, `wind_turbine_formula`,
-                `ev_charger_formula`, and `steam_boiler_formula`.  When `False`, the
-                device is primary and the meter is the fallback.  Has no effect on
+                `ev_charger_formula`, and `steam_boiler_formula`.  When `True`, the
+                meter is primary and the device is the fallback.  Has no effect on
                 `grid_formula`, `consumer_formula`, `producer_formula`, or any of the
                 coalesce formulas.
             formula_overrides: Per-formula overrides for the meter/device preference;

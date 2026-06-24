@@ -16,6 +16,8 @@
 
   - Graph validation failures now raise `InvalidGraphError` with a message that starts with `Graph validation failed:`, followed by one indented line per problem. The old format was `InvalidGraph: <description>`. Note: some errors found while building the graph, for example a missing grid component, still use the old format. Code that matches on the message text of validation failures must be updated.
 
+- `prefer_meters_in_component_formulas` now defaults to `False`: per-category formulas use the component reading as the primary source and the meter as the fallback. Set it to `True` to restore the old meter-first order. This changes only the order of the sources; the new fallback terms from v0.6.0 are used either way.
+
 ## New Features
 
 <!-- Here goes the main new features and examples or instructions on how to use them -->
