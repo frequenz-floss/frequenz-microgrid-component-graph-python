@@ -141,10 +141,11 @@ def test_wind_turbine_graph() -> None:
     }
 
     # 3. Test Formula Generation
-    # References the Meter (ID 2) measuring the Turbine (ID 3).
+    # Component-first by default: the turbine (ID 3) is the primary source,
+    # the meter (ID 2) the fallback.
     assert (
         graph.wind_turbine_formula(wind_turbine_ids={ComponentId(3)})
-        == "COALESCE(#2, #3, 0.0)"
+        == "COALESCE(#3, #2, 0.0)"
     )
 
     # 4. Test Topology (Successors/Predecessors)
@@ -179,8 +180,41 @@ def test_steam_boiler_graph() -> None:
     }
     assert (
         graph.steam_boiler_formula(steam_boiler_ids={ComponentId(3)})
-        == "COALESCE(#2, #3, 0.0)"
+        == "COALESCE(#3, #2, 0.0)"
     )
+
+
+def test_consumer_formula_meter_subtraction() -> None:
+    """Test the consumer formula's meter-subtraction grouping.
+
+    The non-consumer components behind one internal meter are subtracted
+    as one group: the meter reading first, the component readings as the
+    fallback.
+    """
+    graph: microgrid_component_graph.ComponentGraph[
+        Component, ComponentConnection, ComponentId
+    ] = microgrid_component_graph.ComponentGraph(
+        components={
+            GridConnectionPoint(
+                id=ComponentId(1),
+                microgrid_id=MicrogridId(1),
+                rated_fuse_current=100,
+            ),
+            Meter(id=ComponentId(2), microgrid_id=MicrogridId(1)),
+            Meter(id=ComponentId(3), microgrid_id=MicrogridId(1)),
+            SolarInverter(id=ComponentId(4), microgrid_id=MicrogridId(1)),
+        },
+        connections={
+            # Grid -> Grid Meter -> PV Meter -> PV Inverter
+            ComponentConnection(source=ComponentId(1), destination=ComponentId(2)),
+            ComponentConnection(source=ComponentId(2), destination=ComponentId(3)),
+            ComponentConnection(source=ComponentId(3), destination=ComponentId(4)),
+        },
+    )
+
+    # The PV group behind meter #3 is subtracted from the grid meter #2 as
+    # one COALESCE term, and consumption is clamped at zero.
+    assert graph.consumer_formula() == "MAX(#2 - COALESCE(#3, #4, 0.0), 0.0)"
 
 
 def test_relay_is_passthrough() -> None:
