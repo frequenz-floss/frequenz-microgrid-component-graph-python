@@ -83,3 +83,88 @@ def test_stub_and_runtime_init_params_agree() -> None:
             f"  stub:    {stub_params}\n"
             f"  runtime: {runtime_params}"
         )
+
+
+_NON_LITERAL = "<non-literal stub default>"
+
+# pyo3 exposes no introspectable signature for these classes (their
+# `text_signature` holds an expression `inspect` can not parse), so the
+# defaults test can not cover them.  The test pins this set: a class that
+# starts (or stops) being skipped fails the run instead of being skipped
+# silently.
+_KNOWN_NOT_INTROSPECTABLE = frozenset({"ComponentGraph"})
+
+
+def _literal_or_marker(node: ast.expr) -> object:
+    """Evaluate a stub default, or return the ``_NON_LITERAL`` marker."""
+    try:
+        return ast.literal_eval(node)
+    except (TypeError, ValueError):
+        return _NON_LITERAL
+
+
+def _parse_stub_init_defaults() -> dict[str, dict[str, object]]:
+    """Parse the stub into ``{ClassName: {param_name: default_value}}``.
+
+    Only ``__init__`` parameters with a default are included. A default
+    that is not a plain literal (like ``False`` or ``None``) is stored as
+    the ``_NON_LITERAL`` marker; it never equals a runtime value, so a
+    comparison against it fails loudly.
+    """
+    tree = ast.parse(_STUB_PATH.read_text())
+    out: dict[str, dict[str, object]] = {}
+    for node in tree.body:
+        if not isinstance(node, ast.ClassDef):
+            continue
+        for item in node.body:
+            if not isinstance(item, ast.FunctionDef) or item.name != "__init__":
+                continue
+            args = item.args
+            defaults: dict[str, object] = {}
+            positional = args.posonlyargs + args.args
+            for arg, default in zip(positional[-len(args.defaults) :], args.defaults):
+                defaults[arg.arg] = _literal_or_marker(default)
+            for kwarg, kw_default in zip(args.kwonlyargs, args.kw_defaults):
+                if kw_default is not None:
+                    defaults[kwarg.arg] = _literal_or_marker(kw_default)
+            out[node.name] = defaults
+    return out
+
+
+def test_stub_and_runtime_init_defaults_agree() -> None:
+    """`__init__` default values in the stub must match the runtime signature.
+
+    The parameter-name test above can not catch a default changed on only
+    one side -- for example a flag like `prefer_meters_in_component_formulas`
+    flipped in the Rust `#[pyo3(signature = ...)]` but not in the stub.
+    Type checkers and IDEs would then report the wrong default for a flag
+    that inverts behavior.
+
+    Classes without an introspectable runtime signature can not be checked.
+    The known set of such classes is pinned in `_KNOWN_NOT_INTROSPECTABLE`,
+    so a new silent skip fails the test.
+    """
+    stub_defaults = _parse_stub_init_defaults()
+    skipped: set[str] = set()
+    for cls in _PUBLIC_RUNTIME_CLASSES:
+        try:
+            runtime_sig = inspect.signature(cls)
+        except ValueError:
+            skipped.add(cls.__name__)
+            continue
+        runtime_defaults = {
+            name: param.default
+            for name, param in runtime_sig.parameters.items()
+            if param.default is not inspect.Parameter.empty
+        }
+        cls_stub_defaults = stub_defaults.get(cls.__name__, {})
+        assert cls_stub_defaults == runtime_defaults, (
+            f"{cls.__name__}.__init__ default drift:\n"
+            f"  stub:    {cls_stub_defaults}\n"
+            f"  runtime: {runtime_defaults}"
+        )
+    assert skipped == _KNOWN_NOT_INTROSPECTABLE, (
+        "classes skipped by the defaults check changed: "
+        f"{sorted(skipped)} (expected {sorted(_KNOWN_NOT_INTROSPECTABLE)}); "
+        "update `_KNOWN_NOT_INTROSPECTABLE` and check those stub defaults by hand"
+    )
