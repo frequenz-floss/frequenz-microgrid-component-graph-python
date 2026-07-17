@@ -3,14 +3,14 @@
 
 """Behavioral tests for `ComponentGraphConfig` formula preferences.
 
-These tests build a small, controllable graph (Grid -> Meter -> Device)
+These tests build a small, controllable graph (Grid -> Meter -> Component)
 for each per-category formula method and assert the actual formula
-output for the four meter/device-preference combinations:
+output for the four meter/component-preference combinations:
 
-    * default config                -> meter primary
-    * global False                  -> device primary
+    * default config                -> component primary
+    * global True                   -> meter primary
     * per-formula override = True   -> meter primary (override wins)
-    * per-formula override = False  -> device primary (override wins)
+    * per-formula override = False  -> component primary (override wins)
 
 The drift test in `test_stub_drift.py` only checks signatures; this
 file catches actual mis-wiring -- a swapped override, an inverted
@@ -46,9 +46,9 @@ from frequenz.microgrid_component_graph import (
 _MGRID = MicrogridId(1)
 
 # In every per-category topology built below, component #2 is the meter
-# and #3 is the device that appears in the formula.
+# and #3 is the component that appears in the formula.
 _METER_PRIMARY = "COALESCE(#2, #3, 0.0)"
-_DEVICE_PRIMARY = "COALESCE(#3, #2, 0.0)"
+_COMPONENT_PRIMARY = "COALESCE(#3, #2, 0.0)"
 
 # Each per-category graph builder takes an optional `config` and returns a
 # graph rooted at the same Grid -> Meter pair, so the assertion strings
@@ -104,7 +104,7 @@ def _battery_graph(
     config: ComponentGraphConfig | None = None,
 ) -> ComponentGraph[Any, Any, Any]:
     # Grid -> Meter -> BatteryInverter -> Battery; the formula references
-    # the inverter (#3) as the device, the battery (#4) doesn't appear.
+    # the inverter (#3) as the component, the battery (#4) doesn't appear.
     return ComponentGraph(
         components={
             _grid(),
@@ -190,26 +190,26 @@ _CATEGORIES = [
 
 
 @pytest.mark.parametrize("build_graph,method,override_field", _CATEGORIES)
-def test_default_config_prefers_meter(
+def test_default_config_prefers_component(
     build_graph: GraphBuilder,
     method: str,
     override_field: str,  # pylint: disable=unused-argument
 ) -> None:
-    """Default config selects the meter as the primary source."""
+    """Default config selects the component as the primary source."""
     formula = getattr(build_graph(None), method)(None)
-    assert formula == _METER_PRIMARY
+    assert formula == _COMPONENT_PRIMARY
 
 
 @pytest.mark.parametrize("build_graph,method,override_field", _CATEGORIES)
-def test_global_false_prefers_device(
+def test_global_true_prefers_meter(
     build_graph: GraphBuilder,
     method: str,
     override_field: str,  # pylint: disable=unused-argument
 ) -> None:
-    """Setting `prefer_meters_in_component_formulas=False` selects the device."""
-    config = ComponentGraphConfig(prefer_meters_in_component_formulas=False)
+    """Setting `prefer_meters_in_component_formulas=True` selects the meter."""
+    config = ComponentGraphConfig(prefer_meters_in_component_formulas=True)
     formula = getattr(build_graph(config), method)(None)
-    assert formula == _DEVICE_PRIMARY
+    assert formula == _METER_PRIMARY
 
 
 @pytest.mark.parametrize("build_graph,method,override_field", _CATEGORIES)
@@ -229,13 +229,13 @@ def test_override_true_wins_over_global_false(
 def test_override_false_wins_over_global_true(
     build_graph: GraphBuilder, method: str, override_field: str
 ) -> None:
-    """A `False` per-formula override flips to device despite a `True` global."""
+    """A `False` per-formula override flips to component despite a `True` global."""
     config = ComponentGraphConfig(
         prefer_meters_in_component_formulas=True,
         formula_overrides=FormulaOverrides(**{override_field: False}),
     )
     formula = getattr(build_graph(config), method)(None)
-    assert formula == _DEVICE_PRIMARY
+    assert formula == _COMPONENT_PRIMARY
 
 
 def _empty_graph() -> ComponentGraph[Any, Any, Any]:
