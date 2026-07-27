@@ -10,4 +10,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = "0.29.0"
-frequenz-microgrid-component-graph = "0.6.0"
+frequenz-microgrid-component-graph = "0.6.2"
