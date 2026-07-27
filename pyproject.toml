@@ -32,7 +32,7 @@ email = "floss@frequenz.com"
 
 [project.optional-dependencies]
 microgrid = [
-  "frequenz-client-microgrid >= 0.18.3, < 0.19",
+  "frequenz-client-microgrid >= 0.18.4, < 0.19",
 ]
 assets = [
   "frequenz-client-assets >= 0.1.0, < 0.4",
