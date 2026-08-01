@@ -60,7 +60,7 @@ dev-mkdocs = [
 ]
 dev-mypy = [
   "mypy == 2.3.0",
-  "types-Markdown == 3.10.2.20260518",
+  "types-Markdown == 3.10.2.20260712",
   # For checking the noxfile, docs/ script, and tests
   "frequenz-microgrid-component-graph[dev-mkdocs,dev-noxfile,dev-pytest]",
 ]
