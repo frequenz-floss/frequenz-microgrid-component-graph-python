@@ -35,7 +35,7 @@ microgrid = [
   "frequenz-client-microgrid >= 0.18.3, < 0.19",
 ]
 assets = [
-  "frequenz-client-assets >= 0.1.0, < 0.4",
+  "frequenz-client-assets >= 0.1.0, < 0.6",
 ]
 dev-flake8 = [
   "flake8 == 7.3.0",
