@@ -2,7 +2,11 @@
 # Copyright © 2025 Frequenz Energy-as-a-Service GmbH
 
 [build-system]
-requires = ["maturin>=1.9.6,<2.0"]
+requires = [
+  "maturin>=1.9.6,<2.0",
+  "setuptools == 84.0.0",
+  "setuptools_scm[toml] == 10.2.1",
+]
 build-backend = "maturin"
 
 [project]
@@ -156,7 +160,7 @@ disable = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-W=all -Werror -Wdefault::DeprecationWarning -Wdefault::PendingDeprecationWarning -vv"
+addopts = "-W=all -Werror -Wdefault::DeprecationWarning -Wdefault::PendingDeprecationWarning"
 testpaths = ["tests", "python"]
 asyncio_debug = true
 asyncio_mode = "auto"
