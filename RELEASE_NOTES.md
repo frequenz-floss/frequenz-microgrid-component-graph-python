@@ -2,14 +2,11 @@
 
 ## Summary
 
-This release lets formulas take a component's operational mode into account. A component that provides no telemetry is not used as a measurement source. It is still used to classify the meter that measures it, and is measured through that meter instead.
+This release updates the [`frequenz-microgrid-component-graph`](https://github.com/frequenz-floss/frequenz-microgrid-component-graph-rs) Rust crate to [v0.6.3](https://github.com/frequenz-floss/frequenz-microgrid-component-graph-rs/releases/tag/v0.6.3), which stops clamping the consumer and producer formulas.
 
 ## Upgrading
 
-- The `microgrid` extra now needs `frequenz-client-microgrid >= 0.18.4`, up from `>= 0.18.3`. A component's operational mode is read from its `provides_telemetry()` and `accepts_control()` methods, and 0.18.3 has neither, so the feature below would do nothing there. If you pin the client yourself, move the pin to `>= 0.18.4, < 0.19`.
-
-## New Features
-
-- Formulas now take a component's operational mode into account. A component that provides no telemetry is not used as a measurement source. It is still used to classify the meter that measures it (e.g. as a PV meter or a CHP meter), so it can still be measured through that meter.
-
-  The mode is read from the component's `provides_telemetry()` and `accepts_control()` methods. A component that does not have both methods, or does not specify both values, is treated as providing telemetry and is used exactly as before. A component built from the microgrid API carries the mode the API reports for it, so formulas can change for a site that has an inactive or control-only component.
+- `ComponentGraph.consumer_formula()` and `ComponentGraph.producer_formula()` no longer clamp their results. The clamps assumed the sign of active power, so they replaced valid values of other metrics, such as reactive power, with zero.
+  - The consumer formula was wrapped in `MAX(…, 0.0)`. It can now be negative, for example when unmodeled production or a measurement mismatch is larger than the consumption. To get the old result, wrap the formula as `MAX(<formula>, 0.0)`.
+  - Each producer term was wrapped in `MIN(…, 0.0)`. A producer that draws power now adds a positive value instead of zero, so the total can be positive. For example, PV producing 10 kW and a CHP drawing 2 kW used to give -10 kW and now give -8 kW. There is one exception: when the two share a meter below the grid meter, that meter sends data, and `disable_fallback_components` is off, the meter measures them together, so they gave -8 kW before too. Wrapping the total as `MIN(<formula>, 0.0)` clamps the total at zero, but it still differs from the old result when one producer draws power while another produces.
+  - With `include_phantom_loads_in_consumer_formula=True`, the consumer formula is unchanged: it still clamps each of its terms at zero.

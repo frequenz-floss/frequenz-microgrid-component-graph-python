@@ -213,8 +213,8 @@ def test_consumer_formula_meter_subtraction() -> None:
     )
 
     # The PV group behind meter #3 is subtracted from the grid meter #2 as
-    # one COALESCE term, and consumption is clamped at zero.
-    assert graph.consumer_formula() == "MAX(#2 - COALESCE(#3, #4, 0.0), 0.0)"
+    # one COALESCE term.
+    assert graph.consumer_formula() == "#2 - COALESCE(#3, #4, 0.0)"
 
 
 def test_relay_is_passthrough() -> None:
